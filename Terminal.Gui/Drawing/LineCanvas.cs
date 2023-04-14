@@ -20,6 +20,10 @@ namespace Terminal.Gui {
 		/// </summary>
 		Single,
 		/// <summary>
+		/// The border is drawn using thin line glyphs with long dashed (half and double) straight lines.
+		/// </summary>
+		LongDashed,
+		/// <summary>
 		/// The border is drawn using thin line glyphs with dashed (double and triple) straight lines.
 		/// </summary>
 		Dashed,
@@ -36,6 +40,10 @@ namespace Terminal.Gui {
 		/// </summary>
 		Thick,
 		/// <summary>
+		/// The border is drawn using heavy line glyphs with long dashed (half and double) straight lines.
+		/// </summary>
+		ThickLongDashed,
+		/// <summary>
 		/// The border is drawn using heavy line glyphs with dashed (double and triple) straight lines.
 		/// </summary>
 		ThickDashed,
@@ -44,15 +52,19 @@ namespace Terminal.Gui {
 		/// </summary>
 		ThickDotted,
 		/// <summary>
-		/// The border is drawn using single-width line glyphs with rounded corners.
+		/// The border is drawn using thin line glyphs with rounded corners.
 		/// </summary>
 		Rounded,
 		/// <summary>
-		/// The border is drawn using single-width line glyphs with rounded corners and dashed (double and triple) straight lines.
+		/// The border is drawn using thin line glyphs with rounded corners and long dashed (half and double) straight lines.
+		/// </summary>
+		RoundedLongDashed,
+		/// <summary>
+		/// The border is drawn using thin line glyphs with rounded corners and dashed (double and triple) straight lines.
 		/// </summary>
 		RoundedDashed,
 		/// <summary>
-		/// The border is drawn using single-width line glyphs with rounded corners and short dashed (triple and quadruple) straight lines.
+		/// The border is drawn using thin line glyphs with rounded corners and short dashed (triple and quadruple) straight lines.
 		/// </summary>
 		RoundedDotted,
 		// TODO: Support Ruler
@@ -297,7 +309,7 @@ namespace Terminal.Gui {
 			public Rune? GetRuneForIntersects (ConsoleDriver driver, IntersectionDefinition [] intersects)
 			{
 				var useRounded = intersects.Any (i => i.Line.Length != 0 && (
-					i.Line.Style == LineStyle.Rounded || i.Line.Style == LineStyle.RoundedDashed || i.Line.Style == LineStyle.RoundedDotted));
+					i.Line.Style == LineStyle.Rounded || i.Line.Style == LineStyle.RoundedLongDashed || i.Line.Style == LineStyle.RoundedDashed || i.Line.Style == LineStyle.RoundedDotted));
 
 				// Note that there aren't any glyphs for intersections of double lines with thick lines
 
@@ -305,9 +317,9 @@ namespace Terminal.Gui {
 				bool doubleVertical = intersects.Any (l => l.Line.Orientation == Orientation.Vertical && l.Line.Style == LineStyle.Double);
 
 				bool thickHorizontal = intersects.Any (l => l.Line.Orientation == Orientation.Horizontal && (
-					l.Line.Style == LineStyle.Thick || l.Line.Style == LineStyle.ThickDashed || l.Line.Style == LineStyle.ThickDotted));
+					l.Line.Style == LineStyle.Thick || l.Line.Style == LineStyle.ThickLongDashed || l.Line.Style == LineStyle.ThickDashed || l.Line.Style == LineStyle.ThickDotted));
 				bool thickVertical = intersects.Any (l => l.Line.Orientation == Orientation.Vertical && (
-					l.Line.Style == LineStyle.Thick || l.Line.Style == LineStyle.ThickDashed || l.Line.Style == LineStyle.ThickDotted));
+					l.Line.Style == LineStyle.Thick || l.Line.Style == LineStyle.ThickLongDashed || l.Line.Style == LineStyle.ThickDashed || l.Line.Style == LineStyle.ThickDotted));
 
 				if (doubleHorizontal) {
 					return doubleVertical ? doubleBoth : doubleH;
@@ -408,10 +420,12 @@ namespace Terminal.Gui {
 
 			// TODO: Remove these once we have all of the below ported to IntersectionRuneResolvers
 			var useDouble = intersects.Any (i => i.Line.Style == LineStyle.Double);
+			var useLongDashed = intersects.Any (i => i.Line.Style == LineStyle.LongDashed || i.Line.Style == LineStyle.RoundedLongDashed);
 			var useDashed = intersects.Any (i => i.Line.Style == LineStyle.Dashed || i.Line.Style == LineStyle.RoundedDashed);
 			var useDotted = intersects.Any (i => i.Line.Style == LineStyle.Dotted || i.Line.Style == LineStyle.RoundedDotted);
 			// horiz and vert lines same as Single for Rounded
 			var useThick = intersects.Any (i => i.Line.Style == LineStyle.Thick);
+			var useThickLongDashed = intersects.Any (i => i.Line.Style == LineStyle.ThickLongDashed);
 			var useThickDashed = intersects.Any (i => i.Line.Style == LineStyle.ThickDashed);
 			var useThickDotted = intersects.Any (i => i.Line.Style == LineStyle.ThickDotted);
 			// TODO: Support ruler
@@ -427,16 +441,22 @@ namespace Terminal.Gui {
 				if (useDouble) {
 					return driver.HDbLine;
 				}
+				if (useLongDashed) {
+					return driver.HalfRightLine;
+				}
 				if (useDashed) {
 					return driver.HDsLine;
 				}
 				if (useDotted) {
 					return driver.HDtLine;
 				}
-				return useThick ? driver.HThLine : (useThickDashed ? driver.HThDsLine : (useThickDotted ? driver.HThDtLine : driver.HLine));
+				return useThick ? driver.HThLine : (useThickLongDashed ? driver.ThHalfRightLine : (useThickDashed ? driver.HThDsLine : (useThickDotted ? driver.HThDtLine : driver.HLine)));
 			case IntersectionRuneType.VLine:
 				if (useDouble) {
 					return driver.VDbLine;
+				}
+				if (useLongDashed) {
+					return driver.VD2Line;
 				}
 				if (useDashed) {
 					return driver.VDsLine;
@@ -444,7 +464,7 @@ namespace Terminal.Gui {
 				if (useDotted) {
 					return driver.VDtLine;
 				}
-				return useThick ? driver.VThLine : (useThickDashed ? driver.VThDsLine : (useThickDotted ? driver.VThDtLine : driver.VLine));
+				return useThick ? driver.VThLine : (useThickLongDashed ? driver.VThD2Line : (useThickDashed ? driver.VThDsLine : (useThickDotted ? driver.VThDtLine : driver.VLine)));
 
 			default: throw new Exception ("Could not find resolver or switch case for " + nameof (runeType) + ":" + runeType);
 			}
