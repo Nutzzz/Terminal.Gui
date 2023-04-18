@@ -643,6 +643,18 @@ namespace Terminal.Gui {
 			"—",
 			};
 		}
+		public class Line3 : SpinnerStyle {
+			public override int SpinDelay => 130;
+			public override bool SpinBounce => false;
+			public override bool HasSpecialCharacters => DEFAULT_SPECIAL;
+			public override string [] Sequence => new string []
+			{
+			"─",
+			"╲",
+			"│",
+			"╱",
+			};
+		}
 		public class Pipe : SpinnerStyle {
 			public override int SpinDelay => 100;
 			public override bool SpinBounce => DEFAULT_BOUNCE;
@@ -1692,6 +1704,48 @@ namespace Terminal.Gui {
 			"▱▱▱▱▱▰▰",
 			"▱▱▱▱▱▱▰",
 			"▱▱▱▱▱▱▱",
+			};
+		}
+		public class ResizeHorizontal : SpinnerStyle {
+			public override int SpinDelay => 150;
+			public override bool SpinBounce => false;
+			public override bool HasSpecialCharacters => DEFAULT_SPECIAL;
+			public override string [] Sequence => new string []
+			{
+			"⇔",
+			"↔",
+			};
+		}
+		public class ResizeHorizontal2 : SpinnerStyle {
+			public override int SpinDelay => 150;
+			public override bool SpinBounce => false;
+			public override bool HasSpecialCharacters => DEFAULT_SPECIAL;
+			public override string [] Sequence => new string []
+			{
+			"⇔",
+			"⇿",
+			"↔",
+			};
+		}
+		public class ResizeVertical : SpinnerStyle {
+			public override int SpinDelay => 150;
+			public override bool SpinBounce => false;
+			public override bool HasSpecialCharacters => DEFAULT_SPECIAL;
+			public override string [] Sequence => new string []
+			{
+			"⇳",
+			"↕",
+			};
+		}
+		public class ResizeVertical2 : SpinnerStyle {
+			public override int SpinDelay => 150;
+			public override bool SpinBounce => false;
+			public override bool HasSpecialCharacters => DEFAULT_SPECIAL;
+			public override string [] Sequence => new string []
+			{
+			"⇳",
+			"⇕",
+			"↕",
 			};
 		}
 #pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
