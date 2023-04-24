@@ -30,6 +30,8 @@ namespace UICatalog.Scenarios {
 		private MenuItem miAlternatingColors;
 		private MenuItem miCursor;
 		private MenuItem miBottomline;
+		private MenuItem miPopulateVertical;
+		private MenuItem miScrollParallel;
 
 		ColorScheme redColorScheme;
 		ColorScheme redColorSchemeAlt;
@@ -54,6 +56,8 @@ namespace UICatalog.Scenarios {
 					new MenuItem ("_OpenBigExample", "", () => OpenExample(true)),
 					new MenuItem ("_OpenSmallExample", "", () => OpenExample(false)),
 					new MenuItem ("OpenCharacter_Map","",()=>OpenUnicodeMap()),
+					new MenuItem ("Open_SimpleExample", "", () => OpenSimple (true)),
+					new MenuItem ("Open_ListExample", "", () => OpenSimpleList (true)),
 					new MenuItem ("_CloseExample", "", () => CloseExample()),
 					new MenuItem ("_Quit", "", () => Quit()),
 				}),
@@ -83,6 +87,13 @@ namespace UICatalog.Scenarios {
 					new MenuItem ("_Set MinAcceptableWidth", "",SetMinAcceptableWidth),
 					new MenuItem ("_Set All MinAcceptableWidth=1", "",SetMinAcceptableWidthToOne),
 				}),
+				new MenuBarItem ("_List", new MenuItem [] {
+					new MenuItem ("_RemoveHeaders", "", RemoveHeaders),
+					miPopulateVertical = new MenuItem ("_PopulateVertical", "", () => TogglePopulateVertical ()) { Checked = tableView.ListStyle.PopulateVertical, CheckType = MenuItemCheckStyle.Checked },
+					miScrollParallel = new MenuItem ("_ScrollParallel", "", () => ToggleScrollParallel ()) { Checked = tableView.ListStyle.ScrollParallel, CheckType = MenuItemCheckStyle.Checked },
+					new MenuItem ("_Set Max Cell Width", "", SetListMaxWidth),
+					new MenuItem ("_Set Min Cell Width", "", SetListMinWidth),
+				}),
 			});
 
 			Application.Top.Add (menu);
@@ -91,6 +102,7 @@ namespace UICatalog.Scenarios {
 				new StatusItem(Key.F2, "~F2~ OpenExample", () => OpenExample(true)),
 				new StatusItem(Key.F3, "~F3~ CloseExample", () => CloseExample()),
 				new StatusItem(Key.F4, "~F4~ OpenSimple", () => OpenSimple(true)),
+				new StatusItem(Key.F5, "~F5~ OpenList", () => OpenSimpleList(true)),
 				new StatusItem(Application.QuitKey, $"{Application.QuitKey} to Quit", () => Quit()),
 			});
 			Application.Top.Add (statusBar);
@@ -508,6 +520,77 @@ namespace UICatalog.Scenarios {
 			tableView.Style.InvertSelectedCellFirstCharacter = (bool)miCursor.Checked;
 			tableView.SetNeedsDisplay ();
 		}
+
+		private void TogglePopulateVertical ()
+		{
+			//toggle menu item
+			miPopulateVertical.Checked = !miPopulateVertical.Checked;
+			tableView.ListStyle.PopulateVertical = (bool)miPopulateVertical.Checked;
+			tableView.ListUpdate ();
+		}
+
+		private void ToggleScrollParallel ()
+		{
+			//toggle menu item
+			miScrollParallel.Checked = !miScrollParallel.Checked;
+			tableView.ListStyle.ScrollParallel = (bool)miScrollParallel.Checked;
+			tableView.ListUpdate ();
+		}
+
+		private void RemoveHeaders ()
+		{
+			miShowHeaders.Checked = false;
+			miHeaderOverline.Checked = false;
+			miHeaderUnderline.Checked = false;
+			tableView.Style.ShowHeaders = false;
+			tableView.Style.ShowHorizontalHeaderOverline = false;
+			tableView.Style.ShowHorizontalHeaderUnderline = false;
+			tableView.SetNeedsDisplay ();
+		}
+
+		private void SetListMinWidth ()
+		{
+			RunListWidthDialog ("MinCellWidth", (s, v) => s.MinCellWidth = v, (s) => s.MinCellWidth);
+		}
+
+		private void SetListMaxWidth ()
+		{
+			RunListWidthDialog ("MaxCellWidth", (s, v) => s.MaxCellWidth = v, (s) => s.MaxCellWidth);
+		}
+
+		private void RunListWidthDialog (string prompt, Action<TableView, int> setter, Func<TableView, int> getter)
+		{
+			var accepted = false;
+			var ok = new Button ("Ok", is_default: true);
+			ok.Clicked += (s, e) => { accepted = true; Application.RequestStop (); };
+			var cancel = new Button ("Cancel");
+			cancel.Clicked += (s, e) => { Application.RequestStop (); };
+			var d = new Dialog (ok, cancel) { Title = prompt };
+
+			var tf = new TextField () {
+				Text = getter (tableView).ToString (),
+				X = 0,
+				Y = 1,
+				Width = Dim.Fill ()
+			};
+
+			d.Add (tf);
+			tf.SetFocus ();
+
+			Application.Run (d);
+
+			if (accepted) {
+
+				try {
+					setter (tableView, int.Parse (tf.Text.ToString ()));
+				} catch (Exception ex) {
+					MessageBox.ErrorQuery (60, 20, "Failed to set", ex.Message, "Ok");
+				}
+
+				tableView.ListUpdate ();
+			}
+		}
+
 		private void CloseExample ()
 		{
 			tableView.Table = null;
@@ -773,6 +856,10 @@ namespace UICatalog.Scenarios {
 			tableView.Table = BuildSimpleDataTable (big ? 30 : 5, big ? 1000 : 5);
 		}
 
+		private void OpenSimpleList (bool big) {
+			tableView.ListData = BuildSimpleList (big ? 1000 : 5).ToArray ();
+		}
+
 		private void EditCurrentCell (object sender, CellActivatedEventArgs e)
 		{
 			if (e.Table == null)
@@ -895,6 +982,22 @@ namespace UICatalog.Scenarios {
 			}
 
 			return dt;
+		}
+
+		/// <summary>
+		/// Builds a simple list in which values are the index.  This helps testing that scrolling etc is working correctly and not skipping out values when paging
+		/// </summary>
+		/// <param name="cols"></param>
+		/// <param name="rows"></param>
+		/// <returns></returns>
+		public static IList<object> BuildSimpleList (int items) {
+			var list = new List<object> ();
+
+			for (int i = 0; i < items; i++) {
+				list.Add ("Item " + i);
+			}
+
+			return list;
 		}
 	}
 }

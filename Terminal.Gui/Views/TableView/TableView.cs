@@ -9,7 +9,7 @@ namespace Terminal.Gui {
 
 
 	/// <summary>
-	/// View for tabular data based on a <see cref="DataTable"/>.
+	/// View for tabular data based on a <see cref="DataTable"/> or <see cref="IList"/>.
 	/// 
 	/// <a href="https://gui-cs.github.io/Terminal.Gui/articles/tableview.html">See TableView Deep Dive for more information</a>.
 	/// </summary>
@@ -21,6 +21,8 @@ namespace Terminal.Gui {
 		private int selectedColumn;
 		private DataTable table;
 		private TableStyle style = new TableStyle ();
+		private IList listData;
+		private TableListStyle listStyle = new TableListStyle ();
 		private Key cellActivationKey = Key.Enter;
 
 		Point? scrollLeftPoint;
@@ -45,6 +47,16 @@ namespace Terminal.Gui {
 		/// Contains options for changing how the table is rendered
 		/// </summary>
 		public TableStyle Style { get => style; set { style = value; Update (); } }
+
+		/// <summary>
+		/// A list to render in the view.  Setting this property automatically updates and redraws the control.
+		/// </summary>
+		public IList ListData { get => listData; set { listData = value; ListUpdate (); } }
+
+		/// <summary>
+		/// Contains options for changing how the table is rendered when set via <see cref="TableView.ListData"/>
+		/// </summary>
+		public TableListStyle ListStyle { get => listStyle; set { listStyle = value; ListUpdate (); } }
 
 		/// <summary>
 		/// True to select the entire row at once.  False to select individual cells.  Defaults to false
@@ -116,6 +128,11 @@ namespace Terminal.Gui {
 		}
 
 		/// <summary>
+		/// The minimum number of characters to render in any given column.
+		/// </summary>
+		public int MinCellWidth { get; set; }
+
+		/// <summary>
 		/// The maximum number of characters to render in any given column.  This prevents one long column from pushing out all the others
 		/// </summary>
 		public int MaxCellWidth { get; set; } = DefaultMaxCellWidth;
@@ -158,7 +175,7 @@ namespace Terminal.Gui {
 		}
 
 		/// <summary>
-		/// Initialzies a <see cref="TableView"/> class using <see cref="LayoutStyle.Computed"/> layout. 
+		/// Initializes a <see cref="TableView"/> class using <see cref="LayoutStyle.Computed"/> layout. 
 		/// </summary>
 		/// <param name="table">The table to display in the control</param>
 		public TableView (DataTable table) : this ()
@@ -167,7 +184,17 @@ namespace Terminal.Gui {
 		}
 
 		/// <summary>
-		/// Initialzies a <see cref="TableView"/> class using <see cref="LayoutStyle.Computed"/> layout. Set the <see cref="Table"/> property to begin editing
+		/// Initializes a <see cref="TableView"/> class using <see cref="LayoutStyle.Computed"/> layout.
+		/// </summary>
+		/// <param name="listData">The list of items to display in columns in the control</param>
+		public TableView (IList listData) : this ()
+		{
+			this.ListData = listData;
+		}
+
+		/// <summary>
+		/// Initializes a <see cref="TableView"/> class using <see cref="LayoutStyle.Computed"/> layout.
+		/// Set the <see cref="Table"/> or <see cref="ListData"/> properties to begin editing.
 		/// </summary>
 		public TableView () : base ()
 		{
@@ -322,7 +349,7 @@ namespace Terminal.Gui {
 		/// Returns the amount of vertical space required to display the header
 		/// </summary>
 		/// <returns></returns>
-		private int GetHeaderHeight ()
+		protected int GetHeaderHeight ()
 		{
 			int heightRequired = Style.ShowHeaders ? 1 : 0;
 
@@ -1576,6 +1603,14 @@ namespace Terminal.Gui {
 				// is there enough space for this column (and it's data)?
 				colWidth = CalculateMaxCellWidth (col, rowsToRender, colStyle) + padding;
 
+				if (MinCellWidth > 0 && colWidth < MinCellWidth) {
+					if (MinCellWidth > MaxCellWidth) {
+						colWidth = MaxCellWidth;
+					} else {
+						colWidth = MinCellWidth;
+					}
+				}
+
 				// there is not enough space for this columns 
 				// visible content
 				if (usedSpace + colWidth > availableHorizontalSpace) {
@@ -1687,6 +1722,127 @@ namespace Terminal.Gui {
 			}
 
 			return colStyle != null ? colStyle.GetRepresentation (value) : value.ToString ();
+		}
+
+		/// <summary>
+		/// Returns the size in characters of the longest value read from <see cref="TableView.ListData"/>
+		/// </summary>
+		/// <returns></returns>
+		private int GetListMaxLengthItem ()
+		{
+			if (listData == null || listData?.Count == 0) {
+				return 0;
+			}
+
+			int maxLength = 0;
+			for (int i = 0; i < listData.Count; i++) {
+				var t = listData [i];
+				int l;
+				if (t is ustring u) {
+					l = TextFormatter.GetTextWidth (u);
+				} else if (t is string s) {
+					l = s.Length;
+				} else {
+					l = t.ToString ().Length;
+				}
+
+				if (l > maxLength) {
+					maxLength = l;
+				}
+			}
+
+			return maxLength;
+		}
+
+		/// <summary>
+		/// Creates a columned list from <see cref="TableView.ListData"/> to display in a <see cref="TableView"/>
+		/// </summary>
+		private void MakeTableFromListData (IList list)
+		{
+			if (list == null) {
+				return;
+			}
+			int width = GetListMaxLengthItem ();
+			if (width == 0) {
+				return;
+			}
+
+			DataTable listTable = new ();
+
+			int itemsPerSublist = 1;
+			if (listStyle.PopulateVertical && listStyle.ScrollParallel) {
+				decimal m = this.Bounds.Width / width - 1;
+				itemsPerSublist = (int)Math.Ceiling (list.Count / m);
+			} else if (listStyle.PopulateVertical && !listStyle.ScrollParallel) {
+				itemsPerSublist = this.Bounds.Height - GetHeaderHeight ();
+			} else if (!listStyle.PopulateVertical && listStyle.ScrollParallel) {
+				decimal m = this.Bounds.Height - GetHeaderHeight ();
+				itemsPerSublist = (int)Math.Ceiling (list.Count / m);
+			} else if (!listStyle.PopulateVertical && !listStyle.ScrollParallel) {
+				itemsPerSublist = this.Bounds.Width / width - 1;
+			}
+			if (itemsPerSublist < 1) itemsPerSublist = 1;
+
+			int i;
+			for (i = 0; i < itemsPerSublist; i++) {
+				listTable.Columns.Add (new DataColumn (i.ToString ()));
+			}
+
+			var sublist = new List<string> ();
+			int j;
+			for (j = 0; j < list.Count; j++) {
+				if (j % itemsPerSublist == 0 && sublist.Count > 0) {
+					listTable.Rows.Add (sublist.ToArray ());
+					sublist.Clear ();
+				}
+				sublist.Add (list [j].ToString ());
+			}
+			if (j % itemsPerSublist != 0) {
+				listTable.Rows.Add (sublist.ToArray ());
+			}
+
+			if (listStyle.PopulateVertical) {
+				Table = GetTransposedTable (listTable);
+			} else {
+				Table = listTable;
+			}
+		}
+
+		// <summary>
+		// Interchange rows to columns and columns to rows
+		// </summary>
+		// <remarks>From http://codemaverick.blogspot.com/2008/02/transpose-datagrid-or-gridview-by.html</remarks>
+		private DataTable GetTransposedTable (DataTable dt, bool includeColumnNames = false)
+		{
+			var tt = new DataTable ();
+			int offset = 0;
+			if (includeColumnNames) {
+				tt.Columns.Add (new DataColumn ("0"));
+				offset++;
+			}
+			for (int i = 0; i < dt.Columns.Count; i++) {
+				DataRow row = tt.NewRow ();
+				if (includeColumnNames) {
+					row [0] = dt.Columns [i].ColumnName;
+				}
+				for (int j = offset; j < dt.Rows.Count + offset; j++) {
+					if (tt.Columns.Count < dt.Rows.Count + offset)
+						tt.Columns.Add (new DataColumn (j.ToString ()));
+					row [j] = dt.Rows [j - offset] [i];
+				}
+				tt.Rows.Add (row);
+			}
+			return tt;
+		}
+
+		/// <summary>
+		/// Updates the view to reflect changes to <see cref="ListData"/>
+		/// </summary>
+		/// <remarks>This always calls <see cref="View.SetNeedsDisplay()"/></remarks>
+		public void ListUpdate ()
+		{
+			MakeTableFromListData (listData);
+			Update ();
 		}
 
 		/// <summary>
@@ -1930,6 +2086,27 @@ namespace Terminal.Gui {
 
 				return ColumnStyles [col];
 			}
+		}
+
+		/// TODO: Update TableView Deep Dive
+		/// <summary>
+		/// Defines rendering options that affect how the view is displayed when set via <see cref="TableView.ListData"/>.
+		/// 
+		/// <a href="https://gui-cs.github.io/Terminal.Gui/articles/tableview.html">See TableView Deep Dive for more information</a>.
+		/// </summary>
+		public class TableListStyle {
+
+			/// <summary>
+			/// Gets or sets a flag indicating whether to populate data of a <see cref="TableView.ListData"/> down its columns rather than across its rows.
+			/// Defaults to <see langword="false"/>.
+			/// </summary>
+			public bool PopulateVertical { get; set; } = false;
+
+			/// <summary>
+			/// Gets or sets a flag indicating whether to scroll a <see cref="TableView.ListData"/> in the same direction as item population.
+			/// Defaults to <see langword="false"/>.
+			/// </summary>
+			public bool ScrollParallel { get; set; } = false;
 		}
 
 		/// <summary>
