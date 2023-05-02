@@ -90,30 +90,6 @@ namespace Terminal.Gui {
 			return maxLength;
 		}
 
-		/*
-		/// <summary>
-		/// Creates a columned list from <see cref="ListColumnView.ListData"/> to display in a <see cref="ListColumnView"/>
-		/// </summary>
-		private void MakeTableFromListData (IList list, bool transpose)
-		{
-			int i;
-			for (i = 0; i < itemsPerSublist; i++) {
-				listTable.Columns.Add (new DataColumn (i.ToString ()));
-			}
-
-			var sublist = new List<string> ();
-			int j;
-			for (j = 0; j < list.Count; j++) {
-				if (j % itemsPerSublist == 0 && sublist.Count > 0) {
-					listTable.Rows.Add (sublist.ToArray ());
-					sublist.Clear ();
-				}
-				sublist.Add (list [j].ToString ());
-			}
-			listTable.Rows.Add (sublist.ToArray ());
-		}
-		*/
-
 		/// <summary>
 		/// Creates a columned list from an IList to display in a <see cref="TableView"/>
 		/// </summary>
