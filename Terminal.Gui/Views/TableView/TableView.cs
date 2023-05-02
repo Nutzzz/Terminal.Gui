@@ -18,7 +18,7 @@ namespace Terminal.Gui {
 		private int rowOffset;
 		private int selectedRow;
 		private int selectedColumn;
-		private ITableSource table;
+		protected ITableSource table;
 		private TableStyle style = new TableStyle ();
 		private Key cellActivationKey = Key.Enter;
 
@@ -113,6 +113,11 @@ namespace Terminal.Gui {
 					OnSelectedCellChanged (new SelectedCellChangedEventArgs (Table, SelectedColumn, SelectedColumn, oldValue, selectedRow));
 			}
 		}
+
+		/// <summary>
+		/// The minimum number of characters to render in any given column.
+		/// </summary>
+		public int MinCellWidth { get; set; }
 
 		/// <summary>
 		/// The maximum number of characters to render in any given column.  This prevents one long column from pushing out all the others
@@ -314,7 +319,7 @@ namespace Terminal.Gui {
 		/// Returns the amount of vertical space currently occupied by the header or 0 if it is not visible.
 		/// </summary>
 		/// <returns></returns>
-		private int GetHeaderHeightIfAny ()
+		protected int GetHeaderHeightIfAny ()
 		{
 			return ShouldRenderHeaders () ? GetHeaderHeight () : 0;
 		}
@@ -323,7 +328,7 @@ namespace Terminal.Gui {
 		/// Returns the amount of vertical space required to display the header
 		/// </summary>
 		/// <returns></returns>
-		private int GetHeaderHeight ()
+		protected int GetHeaderHeight ()
 		{
 			int heightRequired = Style.ShowHeaders ? 1 : 0;
 
@@ -1582,6 +1587,18 @@ namespace Terminal.Gui {
 
 				// is there enough space for this column (and it's data)?
 				colWidth = CalculateMaxCellWidth (col, rowsToRender, colStyle) + padding;
+
+				if (colWidth > MaxCellWidth) {
+					colWidth = MaxCellWidth;
+				}
+
+				if (MinCellWidth > 0 && colWidth < MinCellWidth) {
+					if (MinCellWidth > MaxCellWidth) {
+						colWidth = MaxCellWidth;
+					} else {
+						colWidth = MinCellWidth;
+					}
+				}
 
 				// there is not enough space for this columns 
 				// visible content
