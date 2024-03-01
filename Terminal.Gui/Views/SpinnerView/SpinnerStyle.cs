@@ -273,6 +273,14 @@ public abstract class SpinnerStyle
         public override int SpinDelay => DEFAULT_DELAY;
     }
 
+    public class Dots13 : SpinnerStyle
+    {
+        public override bool HasSpecialCharacters => DEFAULT_SPECIAL;
+        public override string [] Sequence => new [] { "⣼", "⣹", "⢻", "⠿", "⡟", "⣏", "⣧", "⣶" };
+        public override bool SpinBounce => DEFAULT_BOUNCE;
+        public override int SpinDelay => DEFAULT_DELAY;
+    }
+
     public class Dots8Bit : SpinnerStyle
     {
         public override bool HasSpecialCharacters => DEFAULT_SPECIAL;
@@ -541,6 +549,53 @@ public abstract class SpinnerStyle
         public override int SpinDelay => DEFAULT_DELAY;
     }
 
+    public class Sand : SpinnerStyle
+    {
+        public override bool HasSpecialCharacters => DEFAULT_SPECIAL;
+
+        public override string [] Sequence => new []
+        {
+            "⠁",
+            "⠂",
+            "⠄",
+            "⡀",
+            "⡈",
+            "⡐",
+            "⡠",
+            "⣀",
+            "⣁",
+            "⣂",
+            "⣄",
+            "⣌",
+            "⣔",
+            "⣤",
+            "⣥",
+            "⣦",
+            "⣮",
+            "⣶",
+            "⣷",
+            "⣿",
+            "⡿",
+            "⠿",
+            "⢟",
+            "⠟",
+            "⡛",
+            "⠛",
+            "⠫",
+            "⢋",
+            "⠋",
+            "⠍",
+            "⡉",
+            "⠉",
+            "⠑",
+            "⠡",
+            "⢁"
+        }
+
+        public override bool SpinBounce => DEFAULT_BOUNCE;
+        public override int SpinDelay => DEFAULT_DELAY;
+    }
+
     public class Line : SpinnerStyle
     {
         public override bool HasSpecialCharacters => DEFAULT_SPECIAL;
@@ -683,6 +738,19 @@ public abstract class SpinnerStyle
         public override string [] Sequence => new [] { "◢", "◣", "◤", "◥" };
         public override bool SpinBounce => DEFAULT_BOUNCE;
         public override int SpinDelay => 50;
+    }
+
+    public class Binary : SpinnerStyle
+    {
+        public override bool HasSpecialCharacters => DEFAULT_SPECIAL;
+
+        public override string [] Sequence => new []
+        {
+			"010010", "001100", "100101", "111010", "111101", "010111", "101011", "111000", "110011", "110101"
+        };
+
+        public override bool SpinBounce => DEFAULT_BOUNCE;
+        public override int SpinDelay = DEFAULT_DELAY;
     }
 
     public class Arc : SpinnerStyle
@@ -867,7 +935,7 @@ public abstract class SpinnerStyle
 
         public override string [] Sequence => new []
         {
-            "[    ]", "[=   ]", "[==  ]", "[=== ]", "[ ===]", "[  ==]", "[   =]", "[    ]"
+            "[    ]", "[=   ]", "[==  ]", "[=== ]", "[====]", "[ ===]", "[  ==]", "[   =]", "[    ]"
         };
 
         public override bool SpinBounce => true;
@@ -1369,6 +1437,151 @@ public abstract class SpinnerStyle
             "▱▱▱▱▱▱▰",
             "▱▱▱▱▱▱▱"
         };
+
+        public override bool SpinBounce => DEFAULT_BOUNCE;
+        public override int SpinDelay => DEFAULT_DELAY;
+    }
+
+    public class DwarfFortress : SpinnerStyle
+    {
+        public override bool HasSpecialCharacters => DEFAULT_SPECIAL;
+
+        public override string [] Sequence => new []
+        {
+            " ██████£££  ",
+            "☺██████£££  ",
+            "☺██████£££  ",
+            "☺▓█████£££  ",
+            "☺▓█████£££  ",
+            "☺▒█████£££  ",
+            "☺▒█████£££  ",
+            "☺░█████£££  ",
+            "☺░█████£££  ",
+            "☺ █████£££  ",
+            " ☺█████£££  ",
+            " ☺█████£££  ",
+            " ☺▓████£££  ",
+            " ☺▓████£££  ",
+            " ☺▒████£££  ",
+            " ☺▒████£££  ",
+            " ☺░████£££  ",
+            " ☺░████£££  ",
+            " ☺ ████£££  ",
+            "  ☺████£££  ",
+            "  ☺████£££  ",
+            "  ☺▓███£££  ",
+            "  ☺▓███£££  ",
+            "  ☺▒███£££  ",
+            "  ☺▒███£££  ",
+            "  ☺░███£££  ",
+            "  ☺░███£££  ",
+            "  ☺ ███£££  ",
+            "   ☺███£££  ",
+            "   ☺███£££  ",
+            "   ☺▓██£££  ",
+            "   ☺▓██£££  ",
+            "   ☺▒██£££  ",
+            "   ☺▒██£££  ",
+            "   ☺░██£££  ",
+            "   ☺░██£££  ",
+            "   ☺ ██£££  ",
+            "    ☺██£££  ",
+            "    ☺██£££  ",
+            "    ☺▓█£££  ",
+            "    ☺▓█£££  ",
+            "    ☺▒█£££  ",
+            "    ☺▒█£££  ",
+            "    ☺░█£££  ",
+            "    ☺░█£££  ",
+            "    ☺ █£££  ",
+            "     ☺█£££  ",
+            "     ☺█£££  ",
+            "     ☺▓£££  ",
+            "     ☺▓£££  ",
+            "     ☺▒£££  ",
+            "     ☺▒£££  ",
+            "     ☺░£££  ",
+            "     ☺░£££  ",
+            "     ☺ £££  ",
+            "      ☺£££  ",
+            "      ☺£££  ",
+            "      ☺▓££  ",
+            "      ☺▓££  ",
+            "      ☺▒££  ",
+            "      ☺▒££  ",
+            "      ☺░££  ",
+            "      ☺░££  ",
+            "      ☺ ££  ",
+            "       ☺££  ",
+            "       ☺££  ",
+            "       ☺▓£  ",
+            "       ☺▓£  ",
+            "       ☺▒£  ",
+            "       ☺▒£  ",
+            "       ☺░£  ",
+            "       ☺░£  ",
+            "       ☺ £  ",
+            "        ☺£  ",
+            "        ☺£  ",
+            "        ☺▓  ",
+            "        ☺▓  ",
+            "        ☺▒  ",
+            "        ☺▒  ",
+            "        ☺░  ",
+            "        ☺░  ",
+            "        ☺   ",
+            "        ☺  &",
+            "        ☺ ☼&",
+            "       ☺ ☼ &",
+            "       ☺☼  &",
+            "      ☺☼  & ",
+            "      ‼   & ",
+            "     ☺   &  ",
+            "    ‼    &  ",
+            "   ☺    &   ",
+            "  ‼     &   ",
+            " ☺     &    ",
+            "‼      &    ",
+            "      &     ",
+            "      &     ",
+            "     &   ░  ",
+            "     &   ▒  ",
+            "    &    ▓  ",
+            "    &    £  ",
+            "   &    ░£  ",
+            "   &    ▒£  ",
+            "  &     ▓£  ",
+            "  &     ££  ",
+            " &     ░££  ",
+            " &     ▒££  ",
+            "&      ▓££  ",
+            "&      £££  ",
+            "      ░£££  ",
+            "      ▒£££  ",
+            "      ▓£££  ",
+            "      █£££  ",
+            "     ░█£££  ",
+            "     ▒█£££  ",
+            "     ▓█£££  ",
+            "     ██£££  ",
+            "    ░██£££  ",
+            "    ▒██£££  ",
+            "    ▓██£££  ",
+            "    ███£££  ",
+            "   ░███£££  ",
+            "   ▒███£££  ",
+            "   ▓███£££  ",
+            "   ████£££  ",
+            "  ░████£££  ",
+            "  ▒████£££  ",
+            "  ▓████£££  ",
+            "  █████£££  ",
+            " ░█████£££  ",
+            " ▒█████£££  ",
+            " ▓█████£££  ",
+            " ██████£££  ",
+            " ██████£££  "
+        }
 
         public override bool SpinBounce => DEFAULT_BOUNCE;
         public override int SpinDelay => DEFAULT_DELAY;
